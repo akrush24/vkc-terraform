@@ -6,3 +6,5 @@ variable "availability_zone" { type = string }
 variable "volumes" { type = map(any) }
 variable "interfaces" { type = map(any) }
 variable "networks" { type = map(any) }
+variable "fip" { type = bool }
+variable "user_data" { type = string }

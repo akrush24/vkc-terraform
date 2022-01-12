@@ -11,6 +11,7 @@ terraform {
 resource "openstack_networking_network_v2" "network" {
   name           = var.network_name
   admin_state_up = var.admin_state_up
+  mtu            = var.mtu
 }
 
 ## create subnet
@@ -21,6 +22,7 @@ resource "openstack_networking_subnet_v2" "subnet" {
   dns_nameservers = var.dns_nameservers
   enable_dhcp     = var.enable_dhcp
   ip_version      = 4
+  no_gateway      = var.gateway_ip == "" ? true : false
 }
 
 resource "openstack_networking_router_interface_v2" "router_interface" {

@@ -1,2 +1,7 @@
 *.tfstate*
 .terraform*
+kolla-ansible
+kolla
+admin-openrc.sh
+kolla_overcloud_box2.zip
+id_rsa

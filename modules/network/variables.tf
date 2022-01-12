@@ -6,3 +6,4 @@ variable "routed" { type = bool }
 variable "dns_nameservers" { type = list(string) }
 variable "gateway_ip" { type = string }
 variable "router_id" { type = string }
+variable "mtu" { type = number }

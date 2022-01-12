@@ -22,29 +22,31 @@ resource "openstack_blockstorage_volume_v3" "volumes" {
   enable_online_resize = true
 }
 
-# data "openstack_networking_network_v2" "networks" {
-#   for_each = var.networks
 
-#   name = each.key
-# }
+data "openstack_networking_network_v2" "networks" {
+  for_each = var.interfaces
+
+  name = each.value.name
+}
 
 data "openstack_networking_subnet_v2" "subnets" {
   for_each = var.interfaces
 
-  name = "${each.value.name}_subnet"
+  name = each.value.subnet
 }
 
 
 resource "openstack_networking_port_v2" "ports" {
   for_each = var.interfaces
 
-  name       = each.value.name
-  network_id = var.networks[each.value.name].networks.id
-  #admin_state_up = var.admin_state_up
-  fixed_ip {
-    subnet_id  = data.openstack_networking_subnet_v2.subnets[each.key].id
-    ip_address = each.value.ip
-  }
+  name = "${var.instance_name}_${each.key}"
+
+  network_id = data.openstack_networking_network_v2.networks[each.key].id
+
+  # fixed_ip {
+  #   subnet_id  = data.openstack_networking_subnet_v2.subnets[each.key].id
+  #   ip_address = each.value.ip != "" ? each.value.ip : null
+  # }
   no_security_groups    = each.value.port_security_enabled ? false : true
   port_security_enabled = each.value.port_security_enabled
   security_group_ids    = each.value.port_security_enabled ? each.value.security_group : []
@@ -72,6 +74,7 @@ resource "openstack_compute_instance_v2" "instance" {
     content {
       name = network.value.name
       port = openstack_networking_port_v2.ports[network.key].id
+      #access_network = network.value.access_network
     }
   }
 
@@ -82,18 +85,18 @@ resource "openstack_compute_instance_v2" "instance" {
       uuid                  = openstack_blockstorage_volume_v3.volumes[block_device.key].id
       source_type           = "volume"
       destination_type      = "volume"
-      delete_on_termination = true
+      delete_on_termination = false
       boot_index            = block_device.value.from_image == true ? 0 : 1
     }
 
   }
 
-  #user_data = each.value.user_data != "" ? file(each.value.user_data) : null
+  user_data = var.user_data != "" ? var.user_data : null
 
   # do not delete the instance if the user_data has changed
   lifecycle {
     ignore_changes = [
-      user_data
+      #user_data
     ]
   }
 }
@@ -106,3 +109,37 @@ output "port" {
   value = openstack_networking_port_v2.ports
 }
 
+data "openstack_networking_network_v2" "ext_net" {
+  name = "external"
+}
+
+data "openstack_networking_subnet_ids_v2" "ext_subnets" {
+  network_id = data.openstack_networking_network_v2.ext_net.id
+}
+
+resource "openstack_networking_floatingip_v2" "floatip" {
+  count = var.fip ? 1 : 0
+
+  pool       = data.openstack_networking_network_v2.ext_net.name
+  subnet_ids = data.openstack_networking_subnet_ids_v2.ext_subnets.ids
+}
+
+resource "openstack_compute_floatingip_associate_v2" "fip_1" {
+  count = var.fip ? 1 : 0
+
+  floating_ip           = openstack_networking_floatingip_v2.floatip[0].address
+  instance_id           = openstack_compute_instance_v2.instance.id
+  wait_until_associated = true
+}
+
+output "floatip" {
+  value = openstack_networking_floatingip_v2.floatip
+}
+
+output "vms_network" {
+  value = openstack_compute_instance_v2.instance
+}
+
+output "vms_ports" {
+  value = openstack_networking_port_v2.ports
+}
