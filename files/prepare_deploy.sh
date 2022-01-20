@@ -74,7 +74,6 @@ EOF
 
     curl ${DEPLOY_NODE_IP_ADDR}:5000/v2/_catalog
     curl ${DEPLOY_NODE_IP_ADDR}:8081
-    docker login -uadmin -ppassw0rd 127.0.0.1:5000
 fi
 
 ##########################
