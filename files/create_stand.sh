@@ -51,6 +51,7 @@ scp ${SSH_PARAMS} -r ./kolla/* ${DEPLOY_USER}@${DEPLOY_EXT_IP}:/etc/kolla
 
 # Get last kolla-ansible code
 rm -rf ./kolla-ansible
+GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" \
 git clone -b 'release/mcs/private/v2.0.0' git@gitlab.corp.mail.ru:infra/private/kolla-ansible.git kolla-ansible
 scp ${SSH_PARAMS} -r kolla-ansible ${DEPLOY_USER}@${DEPLOY_EXT_IP}:/home/${DEPLOY_USER}
 scp ${SSH_PARAMS} ./files/octavia.sh ${DEPLOY_USER}@${DEPLOY_EXT_IP}:/home/${DEPLOY_USER}/
