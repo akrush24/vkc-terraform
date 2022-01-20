@@ -55,6 +55,7 @@ sudo ifup tapoctavia1'" | bash;
     done
 
 
+#########
 ### Check
 ansible -i /etc/kolla/multinode-mcs control -b -m shell -a 'ls -l /etc/sysconfig/network-scripts/ifcfg-tapoctavia1'
 ansible -i /etc/kolla/multinode-mcs control -b -m shell -a 'docker exec -it openvswitch_vswitchd sh -c "ovs-vsctl get interface tapoctavia1 external-ids:attached-mac;ovs-vsctl get interface tapoctavia1 external-ids:iface-id"'

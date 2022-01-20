@@ -5,6 +5,7 @@ set -e
 
 DEPLOY_NODE_IP_ADDR=${1}
 
+
 ######################
 ### Deploy product ###
 source "/home/centos/venv/bin/activate"

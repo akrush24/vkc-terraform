@@ -11,11 +11,13 @@ DEPLOY_USER="centos"
 SSH_PARAMS="-i ./id_rsa -o StrictHostKeyChecking=no"
 
 
+##############
 # Create stand
 terraform apply -auto-approve -var-file=./overcloud.tfvars
 sleep 120
 
 
+####################
 # Prepare for deploy
 DEPLOY_EXT_IP=$(terraform output --json vms_fip | jq -r '.[][].address')
 KOLLA_EXTERNAL_VIP_ADDRESS=$(terraform output --json vip_ip | jq -r '.[][] | select(."hostname"=="ext") | .ip_address')
@@ -37,6 +39,7 @@ rm -rf ./kolla
 unzip -P passw0rd ./kolla_overcloud_box2.zip
 
 
+###################
 # Prepare variables
 sed -E -i "s#^(kolla_external_vip_address:)\ (.+)#\1\ ${KOLLA_EXTERNAL_VIP_ADDRESS}#" ./kolla/globals.yml
 sed -E -i "s#^(kolla_internal_vip_address:)\ (.+)#\1\ ${KOLLA_INTERNAL_VIP_ADDRESS}#" ./kolla/globals.yml
@@ -49,6 +52,7 @@ echo "${KOLLA_EXTERNAL_VIP_ADDRESS_FIP} overcloud${STAGE}.private.infra.devmail.
 scp ${SSH_PARAMS} -r ./kolla/* ${DEPLOY_USER}@${DEPLOY_EXT_IP}:/etc/kolla
 
 
+#############################
 # Get last kolla-ansible code
 rm -rf ./kolla-ansible
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" \
@@ -59,13 +63,15 @@ scp ${SSH_PARAMS} ./files/prepare_deploy.sh ${DEPLOY_USER}@${DEPLOY_EXT_IP}:/hom
 scp ${SSH_PARAMS} ./files/deploy.sh ${DEPLOY_USER}@${DEPLOY_EXT_IP}:/home/${DEPLOY_USER}/
 
 
-# Run Deploy
+####################
+# Run product deploy
 ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} "bash /home/${DEPLOY_USER}/prepare_deploy.sh ${NEXUS_SERVER} ${1}" 
 ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} "bash /home/${DEPLOY_USER}/deploy.sh ${NEXUS_SERVER}"
 
 
+###############
+# Finish output
 set +x
-# Finish
 echo "URL: https://overcloud${STAGE}.private.infra.devmail.ru"
 echo "DEPLOY_EXT_IP: ${DEPLOY_EXT_IP}"
 echo "KOLLA_EXTERNAL_VIP_ADDRESS: ${KOLLA_EXTERNAL_VIP_ADDRESS}"
@@ -73,9 +79,10 @@ echo "KOLLA_INTERNAL_VIP_ADDRESS: ${KOLLA_INTERNAL_VIP_ADDRESS}"
 echo "NEXUS_SERVER: ${NEXUS_SERVER}"
 
 
+###############################################
 # Here will be the launch of cloud test scripts
 
 
-set -x
 ###  Destroy Stand
+# set -x
 # terraform destroy -auto-approve -var-file=./overcloud.tfvars
