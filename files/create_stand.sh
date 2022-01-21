@@ -5,6 +5,7 @@ set -x
 
 
 DEPLOY_USER="centos"
+DOMAIN="private.infra.devmail.ru"
 
 # private SSH key for all nodes
 # public key stored in overcloud.tfvars parameter public_key
@@ -44,11 +45,11 @@ unzip -P passw0rd ./kolla_overcloud_box2.zip
 sed -E -i "s#^(kolla_external_vip_address:)\ (.+)#\1\ ${KOLLA_EXTERNAL_VIP_ADDRESS}#" ./kolla/globals.yml
 sed -E -i "s#^(kolla_internal_vip_address:)\ (.+)#\1\ ${KOLLA_INTERNAL_VIP_ADDRESS}#" ./kolla/globals.yml
 sed -E -i "s#^(deploy_server:)\ (.+)#\1\ \"${NEXUS_SERVER}\"#" ./kolla/globals.yml
-sed -E -i "s#(kolla_external_fqdn):\ (.+)#\1:\ \"overcloud${STAGE}.private.infra.devmail.ru\"#" ./kolla/globals.yml
+sed -E -i "s#(kolla_external_fqdn):\ (.+)#\1:\ \"overcloud${STAGE}.${DOMAIN}\"#" ./kolla/globals.yml
 sed -E -i "s#(overcloud)[0-9]{1,3}#\1${STAGE}#" ./kolla/config/mcs-nginx/configuration.json
 ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} 'sudo mkdir /etc/kolla -p;sudo chown centos /etc/kolla;sudo ln -s /home/centos /home/kolla || exit 0'
-echo "${KOLLA_INTERNAL_VIP_ADDRESS} int-overcloud${STAGE}.private.infra.devmail.ru" | ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} 'sudo tee -a /etc/hosts'
-echo "${KOLLA_EXTERNAL_VIP_ADDRESS_FIP} overcloud${STAGE}.private.infra.devmail.ru" | ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} 'sudo tee -a /etc/hosts'
+echo "${KOLLA_INTERNAL_VIP_ADDRESS} int-overcloud${STAGE}.${DOMAIN}" | ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} 'sudo tee -a /etc/hosts'
+echo "${KOLLA_EXTERNAL_VIP_ADDRESS_FIP} overcloud${STAGE}.${DOMAIN}" | ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} 'sudo tee -a /etc/hosts'
 scp ${SSH_PARAMS} -r ./kolla/* ${DEPLOY_USER}@${DEPLOY_EXT_IP}:/etc/kolla
 
 
@@ -72,7 +73,7 @@ ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} "bash /home/${DEPLOY_USER}/dep
 ###############
 # Finish output
 set +x
-echo "URL: https://overcloud${STAGE}.private.infra.devmail.ru"
+echo "URL: https://overcloud${STAGE}.${DOMAIN}"
 echo "DEPLOY_EXT_IP: ${DEPLOY_EXT_IP}"
 echo "KOLLA_EXTERNAL_VIP_ADDRESS: ${KOLLA_EXTERNAL_VIP_ADDRESS}"
 echo "KOLLA_INTERNAL_VIP_ADDRESS: ${KOLLA_INTERNAL_VIP_ADDRESS}"
