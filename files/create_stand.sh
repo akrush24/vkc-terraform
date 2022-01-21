@@ -73,11 +73,13 @@ ssh ${SSH_PARAMS} ${DEPLOY_USER}@${DEPLOY_EXT_IP} "bash /home/${DEPLOY_USER}/dep
 ###############
 # Finish output
 set +x
-echo "URL: https://overcloud${STAGE}.${DOMAIN}"
-echo "DEPLOY_EXT_IP: ${DEPLOY_EXT_IP}"
-echo "KOLLA_EXTERNAL_VIP_ADDRESS: ${KOLLA_EXTERNAL_VIP_ADDRESS}"
-echo "KOLLA_INTERNAL_VIP_ADDRESS: ${KOLLA_INTERNAL_VIP_ADDRESS}"
-echo "NEXUS_SERVER: ${NEXUS_SERVER}"
+echo "URL: https://overcloud${STAGE}.${DOMAIN}" | tee "overcloud${STAGE}.${DOMAIN}.txt"
+echo "DEPLOY_EXT_IP: ${DEPLOY_EXT_IP}" | tee -a "overcloud${STAGE}.${DOMAIN}.txt"
+echo "KOLLA_EXTERNAL_VIP_ADDRESS: ${KOLLA_EXTERNAL_VIP_ADDRESS}" | tee -a "overcloud${STAGE}.${DOMAIN}.txt"
+echo "KOLLA_INTERNAL_VIP_ADDRESS: ${KOLLA_INTERNAL_VIP_ADDRESS}" | tee -a "overcloud${STAGE}.${DOMAIN}.txt"
+echo "NEXUS_SERVER: ${NEXUS_SERVER}" | tee -a "overcloud${STAGE}.${DOMAIN}.txt"
+echo "KEYCLOAK ADMIN UI: https://keycloak-overcloud${STAGE}.${DOMAIN}/auth/admin/master/console/" | tee -a "overcloud${STAGE}.${DOMAIN}.txt"
+echo "SUPER ADMIN UI: https://admin-overcloud${STAGE}.${DOMAIN}/projects/" | tee -a "overcloud${STAGE}.${DOMAIN}.txt"
 
 
 ###############################################
