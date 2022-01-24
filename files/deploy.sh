@@ -45,7 +45,13 @@ source /etc/kolla/admin-openrc.sh
 openstack aggregate create --zone AZ1 AZ1
 openstack aggregate add host AZ1 compute01
 ### Create ext-net
-openstack network create --external --share --mtu 1400 ext-net
+openstack network create \
+    --external \
+    --share \
+    --mtu 1450 \
+    --provider-network-type flat \
+    --provider-physical-network physnet1 \
+ext-net
 openstack subnet create \
     --dhcp \
     --subnet-range 192.168.1.0/24 \
